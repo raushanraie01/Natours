@@ -1,16 +1,21 @@
-const mongoose = require('mongoose');
-const app = require('./app');
-
-mongoose
-  .connect(
-    'mongodb+srv://raushanraie01:JstsKLazCuwye7lF@cluster0.ykly0ja.mongodb.net/TravellersData',
-  )
-  .then(() => console.log('Database Connected!'))
-  .catch((err) => {
-    console.log('Error!');
-  });
-
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server app listening on port:${PORT} `);
+const dotenv = require('dotenv');
+dotenv.config({
+  path: './config.env',
 });
+const app = require('./app.js');
+const ConnectDB = require('./db/index.js');
+
+dotenv.config({
+  path: './config.env',
+});
+// console.log(process.env);
+
+ConnectDB()
+  .then(() => {
+    app.listen(process.env?.PORT || 3000, () => {
+      console.log(`🛞 Server is Running on port ${process.env.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log('Error:', err);
+  });

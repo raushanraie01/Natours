@@ -1,12 +1,15 @@
 const express = require('express');
-
+const toursRoute = require('./routes/tourRoutes.js');
+const morgan = require('morgan');
 const app = express();
+
 //Middleware
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 app.use(express.static('public'));
 app.use(express.json());
 
-app.get('api/v1/tours', (req, res) => {
-  res.send();
-});
+app.use('/api/v1/tours', toursRoute);
 
 module.exports = app;
