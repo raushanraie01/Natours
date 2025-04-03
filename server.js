@@ -2,12 +2,10 @@ const dotenv = require('dotenv');
 dotenv.config({
   path: './config.env',
 });
+
 const app = require('./app.js');
 const ConnectDB = require('./db/index.js');
 
-dotenv.config({
-  path: './config.env',
-});
 // console.log(process.env);
 
 ConnectDB()
