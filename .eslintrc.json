@@ -4,7 +4,7 @@
   "rules": {
     "prettier/prettier": "off",
     "spaced-comment": "off",
-    "no-console": "off",
+    "no-console": "warn",
     "consistent-return": "off",
     "func-names": "off",
     "object-shorthand": "off",
@@ -16,9 +16,8 @@
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }]
   },
-  
-    "engine":{
-      "node":"10.0.0"
-    }
-  
+
+  "engine": {
+    "node": "10.0.0"
+  }
 }

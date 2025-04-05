@@ -1,8 +1,9 @@
 const express = require('express');
-const toursRoute = require('./routes/tour_route.js');
-const morgan = require('morgan');
 const ApiError = require('./utils/apiError.js');
 const globalErrorHandler = require('./controllers/errorController.js');
+const toursRoute = require('./routes/tour_route.js');
+const morgan = require('morgan');
+
 const app = express();
 
 //Middleware

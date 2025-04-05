@@ -1,4 +1,5 @@
 const Tour = require('../models/tour.model.js');
+const ApiError = require('../utils/apiError.js');
 const asyncHandler = require('../utils/asyncHandler.js');
 
 exports.getAllTours = asyncHandler(async (req, res, next) => {
@@ -65,6 +66,10 @@ exports.updateTour = asyncHandler(async (req, res, next) => {
     runValidators: true,
   });
 
+  if (!tour) {
+    return next(new ApiError('Tour with given id does not exist', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     message: 'Done',
@@ -76,6 +81,10 @@ exports.getTour = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const tour = await Tour.findById(id);
+
+  if (!tour) {
+    return next(new ApiError('Tour with given id does not exist', 404));
+  }
   res.status(200).json({
     status: 'success',
     data: { tour },
@@ -84,7 +93,11 @@ exports.getTour = asyncHandler(async (req, res, next) => {
 
 exports.deleteTour = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  await Tour.findByIdAndDelete(id);
+  const tour = await Tour.findByIdAndDelete(id);
+
+  if (!tour) {
+    return next(new ApiError('Tour with given id does not exist', 404));
+  }
   res.status(204).json({
     status: 'success',
     message: 'Deleted',
