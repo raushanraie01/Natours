@@ -2,6 +2,7 @@ const express = require('express');
 const ApiError = require('./utils/apiError.js');
 const globalErrorHandler = require('./controllers/errorController.js');
 const toursRoute = require('./routes/tour_route.js');
+const usersRoute = require('./routes/user.route.js');
 const morgan = require('morgan');
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(express.static('public'));
 app.use(express.json());
 
 app.use('/api/v1/tours', toursRoute);
+app.use('/api/v1/users', usersRoute);
 
 //handling error for different route
 app.all('*', (req, _, next) => {

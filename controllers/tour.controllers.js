@@ -3,6 +3,8 @@ const ApiError = require('../utils/apiError.js');
 const asyncHandler = require('../utils/asyncHandler.js');
 
 exports.getAllTours = asyncHandler(async (req, res, next) => {
+  //copying object
+  // console.log(req);
   let queryObj = { ...req.query };
 
   // /advance filtering
@@ -37,7 +39,7 @@ exports.getAllTours = asyncHandler(async (req, res, next) => {
   }
 
   const tours = await queryObj;
-  console.log(tours);
+  // console.log(tours);
 
   res.status(200).json({
     status: 'success',
@@ -47,6 +49,7 @@ exports.getAllTours = asyncHandler(async (req, res, next) => {
 });
 
 exports.createTour = asyncHandler(async (req, res, next) => {
+  // console.log(req.body);
   const newTour = await Tour.create(req.body);
 
   res.status(201).json({
