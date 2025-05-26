@@ -6,8 +6,6 @@ dotenv.config({
 const app = require('./app.js');
 const ConnectDB = require('./db/index.js');
 
-// console.log(process.env);
-
 ConnectDB()
   .then(() => {
     app.listen(process.env?.PORT || 3000, () => {
