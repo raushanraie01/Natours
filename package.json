@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "ally": "^0.2.13",
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.4.7",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
@@ -22,6 +23,7 @@
     "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-react": "^7.37.4",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
     "morgan": "^1.10.0",
     "prettier": "^3.5.0",

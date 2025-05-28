@@ -10,6 +10,7 @@ const {
 const authController = require('../controllers/authController.js');
 
 const router = express.Router();
+
 router.route('/signUp').post(authController.signUp);
 
 router.route('/').get(getAllUsers).post(createUser);
