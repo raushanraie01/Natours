@@ -7,7 +7,7 @@ const handleCastErrorDB = (err) => {
 
 const handleDuplicateFieldsDB = (err) => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-  console.log(value);
+  // console.log(value);
 
   const message = `Duplicate field value: ${value}. Please use another value!`;
   return new ApiError(message, 400);
@@ -31,6 +31,7 @@ const sendErrorDev = (err, res) => {
 
 const sendErrorProd = (err, res) => {
   // Operational, trusted error: send message to client
+
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
@@ -49,6 +50,9 @@ const sendErrorProd = (err, res) => {
     });
   }
 };
+// const handleJWTError = () => {
+//   return new ApiError('Invalid token. Please Login Again!', 401);
+// };
 
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
@@ -56,6 +60,7 @@ module.exports = (err, req, res, next) => {
 
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
+    // console.log(err);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
 
@@ -63,6 +68,7 @@ module.exports = (err, req, res, next) => {
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
+    // if (error.name === 'JsonWebTokenError') error = handleJWTError(error);
 
     sendErrorProd(error, res);
   }

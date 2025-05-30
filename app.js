@@ -14,6 +14,12 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.static('public'));
 app.use(express.json());
 
+app.use((req, _, next) => {
+  // console.log(req.headers);
+
+  next();
+});
+
 app.use('/api/v1/tours', toursRoute);
 app.use('/api/v1/users', usersRoute);
 

@@ -1,6 +1,6 @@
 const User = require('../models/user.model');
 const ApiError = require('../utils/apiError');
-const asyncHandler = require('../utils/asyncHandler');
+const asyncHandler = require('./../utils/asyncHandler');
 
 // exports.signUp = asyncHandler(async (req, res) => {
 //   const newUser = User.create(req.body);
@@ -84,7 +84,7 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 exports.getAllUsers = asyncHandler(async (req, res, next) => {
-  const users = await User.find();
+  const users = await User.find().select('+password');
 
   // SEND RESPONSE
   res.status(200).json({
@@ -96,10 +96,18 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+exports.getUser = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (!user) {
+    return next(new apiError('Invalid user Id', 401));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user,
+    },
   });
 };
 
@@ -130,7 +138,7 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
   // 1) Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(
-      new AppError(
+      new ApiError(
         'This route is not for password updates. Please use /updateMyPassword.',
         400,
       ),
