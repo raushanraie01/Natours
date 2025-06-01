@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 // const { validate } = require('./tour.model');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+
 // const { token } = require('morgan');
 
 const UserSchema = new mongoose.Schema(
@@ -37,6 +39,8 @@ const UserSchema = new mongoose.Schema(
     },
 
     passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   },
   { timestamps: true },
 );
@@ -62,6 +66,17 @@ UserSchema.methods.isTokenValid = async function (tokenIssuedAt) {
   //if it changed
   let passwordChangeTimestamps = this.passwordChangedAt.getTime() / 1000; //changed in seconds
   return tokenIssuedAt > passwordChangeTimestamps;
+};
+
+UserSchema.createPasswordRefreshToken = async function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; ///10 more min to reset password
+  return resetToken;
 };
 
 const User = mongoose.model('User', UserSchema);

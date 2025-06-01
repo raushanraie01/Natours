@@ -12,6 +12,14 @@ const authController = require('../controllers/authController.js');
 const router = express.Router();
 
 router.route('/').get(authController.protect, getAllTours).post(createTour);
-router.route('/:id').patch(updateTour).get(getTour).delete(deleteTour);
+router
+  .route('/:id')
+  .patch(updateTour)
+  .get(getTour)
+  .delete(
+    authController.protect, 
+    authController.restrictTo('admin'),
+    deleteTour,
+  );
 
 module.exports = router;

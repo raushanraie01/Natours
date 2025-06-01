@@ -3,7 +3,6 @@ const asyncHandler = require('../utils/asyncHandler');
 const jwt = require('jsonwebtoken');
 const apiError = require('../utils/apiError');
 const { promisify } = require('util');
-const bcrypt = require('bcrypt');
 
 const generateRefreshToken = async (payload) => {
   return jwt.sign({ payload }, process.env.JWT_SECRET, {
@@ -16,10 +15,10 @@ exports.signUp = asyncHandler(async (req, res, next) => {
 
   //check user enter every credential or not
   if (!name || !email || !password || !passwordConfirm) {
-    return next(new apiError('Enter credentials...', 401));
+    return next(new apiError('Enter all credentials', 401));
   }
   //check password and confirmPassword are same
-  if (password != passwordConfirm) {
+  if (password !== passwordConfirm) {
     return next(new apiError("Password and confirmPassword didn't match"), 401);
   }
   //if exists
@@ -121,3 +120,30 @@ exports.protect = asyncHandler(async (req, _, next) => {
   req.user = freshUser;
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  return (req, _, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new apiError("You don't have permission to perform this action", 403),
+      );
+    }
+    next();
+  };
+};
+
+exports.forgetPassword = async (req, res, next) => {
+  //1.)  Get user based on email
+  const user = User.findOne({ email: req.body.email });
+  //if user doesn't exists
+  if (!user) {
+    return next(new apiError('Invalid email!', 401));
+  }
+  //2.) if exists   generate token
+  const resetToken = user.createPasswordRefreshToken();
+  user.save();
+
+  res.status(200).json({
+    status: 'under development',
+  });
+};
