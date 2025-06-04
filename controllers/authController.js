@@ -21,8 +21,8 @@ exports.signUp = asyncHandler(async (req, res, next) => {
   if (password !== passwordConfirm) {
     return next(new apiError("Password and confirmPassword didn't match"), 401);
   }
-  //if exists
-  //then create User
+
+  //if exists , then create User
   const newUser = await User.create({
     name,
     email,
@@ -83,6 +83,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   });
 });
 
+//protecting routing from unauthorized access
 exports.protect = asyncHandler(async (req, _, next) => {
   //1)getting token and check of it's there
   let token;
@@ -105,10 +106,10 @@ exports.protect = asyncHandler(async (req, _, next) => {
   //check wheather user is exist or not
 
   const freshUser = await User.findById(decodedData.payload);
-  console.log(freshUser);
+
   if (!freshUser) {
     return next(
-      new apiError("The user belonging to this token doesn't exists.", 401),
+      new apiError("The user belonging to this token doesn't exists!", 401),
     );
   }
 
@@ -121,6 +122,7 @@ exports.protect = asyncHandler(async (req, _, next) => {
   next();
 });
 
+//protecting tours from deleting it.
 exports.restrictTo = (...roles) => {
   return (req, _, next) => {
     if (!roles.includes(req.user.role)) {
@@ -134,16 +136,21 @@ exports.restrictTo = (...roles) => {
 
 exports.forgetPassword = async (req, res, next) => {
   //1.)  Get user based on email
-  const user = User.findOne({ email: req.body.email });
+  const user = await User.findOne({ email: req.body.email });
+
   //if user doesn't exists
   if (!user) {
-    return next(new apiError('Invalid email!', 401));
+    return next(new apiError("User doesn't exists as per given email", 401));
   }
   //2.) if exists   generate token
-  const resetToken = user.createPasswordRefreshToken();
-  user.save();
+
+  const resetToken = await user.createPasswordRefreshToken();
+  user.save({ validateBeforeSave: false });
+
+  //send it to user's email
 
   res.status(200).json({
-    status: 'under development',
+    status: 'successfull',
+    data: { user },
   });
 };

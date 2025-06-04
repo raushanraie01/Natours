@@ -4,7 +4,6 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-// const { token } = require('morgan');
 
 const UserSchema = new mongoose.Schema(
   {
@@ -68,8 +67,9 @@ UserSchema.methods.isTokenValid = async function (tokenIssuedAt) {
   return tokenIssuedAt > passwordChangeTimestamps;
 };
 
-UserSchema.createPasswordRefreshToken = async function () {
+UserSchema.methods.createPasswordRefreshToken = async function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
+
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)

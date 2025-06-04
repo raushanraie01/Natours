@@ -100,7 +100,7 @@ exports.getUser = async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(id);
   if (!user) {
-    return next(new apiError('Invalid user Id', 401));
+    return next(new ApiError('Invalid user Id', 401));
   }
 
   res.status(200).json({
