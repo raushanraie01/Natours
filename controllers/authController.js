@@ -3,6 +3,21 @@ const asyncHandler = require('../utils/asyncHandler');
 const jwt = require('jsonwebtoken');
 const apiError = require('../utils/apiError');
 const { promisify } = require('util');
+const sendMail = require('../utils/email');
+const crypto = require('crypto');
+
+const createResponseAndGenerateToken = async (user, statusCode, res) => {
+  //generate JWT token
+  let token = await generateRefreshToken(user._id);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
 
 const generateRefreshToken = async (payload) => {
   return jwt.sign({ payload }, process.env.JWT_SECRET, {
@@ -31,16 +46,9 @@ exports.signUp = asyncHandler(async (req, res, next) => {
   });
 
   //generateToken
-  const token = await generateRefreshToken(newUser._id);
-
   //send response along with token
-  res.status(201).json({
-    status: 'success',
-    token: token,
-    data: {
-      user: newUser,
-    },
-  });
+
+  createResponseAndGenerateToken(newUser, 201, res);
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
@@ -75,12 +83,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new apiError('Email or password is invalid', 401));
   }
   //if right passsword then generate token
-  let token = await generateRefreshToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createResponseAndGenerateToken(user, 200, res);
 });
 
 //protecting routing from unauthorized access
@@ -117,8 +120,9 @@ exports.protect = asyncHandler(async (req, _, next) => {
   if (!freshUser.isTokenValid(decodedData.iat)) {
     return next(new apiError('Invalid Token,Please login first!', 401));
   }
-  //it means token is valid
+  //it means token is valid and update user in request
   req.user = freshUser;
+
   next();
 });
 
@@ -134,7 +138,8 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-exports.forgetPassword = async (req, res, next) => {
+//implementing forgotPassword to update new Passsword
+exports.forgetPassword = asyncHandler(async (req, res, next) => {
   //1.)  Get user based on email
   const user = await User.findOne({ email: req.body.email });
 
@@ -145,12 +150,105 @@ exports.forgetPassword = async (req, res, next) => {
   //2.) if exists   generate token
 
   const resetToken = await user.createPasswordRefreshToken();
-  user.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: false });
 
   //send it to user's email
+  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  const message = `Forgot your password ? Submit the patch requestwith your new password ans password confirm to: ${resetURL}.\n If you didn't forget your password , please ignore this email!`;
 
-  res.status(200).json({
-    status: 'successfull',
-    data: { user },
+  try {
+    await sendMail({
+      email: user.email,
+      subject: `Your password reset token ( valid for 10 min)`,
+      message,
+    });
+    res.status(200).json({
+      status: 'successfull',
+      message: ' Token send to email',
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({
+      validateBeforeSave: false,
+    });
+    return next(new apiError('There was an error while sending mail', 500));
+  }
+});
+
+//implementing resetPassword to update new Passsword
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  //Get the user based on token
+  const { token } = req.params;
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
   });
-};
+
+  //2) if the token has not expired ,and there is a user , set a new password
+
+  if (!user) {
+    return next(new apiError('Token is invalid or expired!', 400));
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  // 3)Update changePasswordAt property for the user --->userSchema.pre
+
+  // 4)log the user in , send JWT
+  createResponseAndGenerateToken(user, 200, res);
+});
+
+//implementing UpdatePassword to update new Passsword
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  //Get user from collection
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user) {
+    return next(new apiError('Need to logged in first... '));
+  }
+  if (
+    !(await user.isPasswordCorrect(req.body.passwordCurrent, user.password))
+  ) {
+    return next(new apiError('Your Current password is wrong', 401));
+  }
+
+  //if so , update password
+  (user.password = req.body.password),
+    (user.passwordConfirm = req.body.passwordConfirm);
+  await user.save();
+
+  // *** User.findByIdAndUpdate() ---> validation will not work
+
+  //logged the user in and send JWT token
+  createResponseAndGenerateToken(user, 200, res);
+});
+
+//updating the credentials except password and confirmPassword
+exports.updateMe = asyncHandler(async (req, res, next) => {
+  console.log('Hello updateMe');
+
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(
+      new apiError(
+        'for updating password and confirm password,Go to updatePassword',
+        401,
+      ),
+    );
+  }
+
+  //finding user using protected route
+  const user = await User.findById(req.user._id);
+  console.log(user);
+  if (!user) {
+    return next(new apiError('Please logged in...', 401));
+  }
+  //user exists
+  //update whatever you want excepts password and passwordConfirm
+
+  createResponseAndGenerateToken(user, 201, res);
+});

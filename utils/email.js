@@ -1,25 +1,29 @@
 const nodemailer = require('nodemailer');
 
-const sendMail = async (options) => {
-  //create a transporter
-  const transporter = nodemailer.createTransport({
-    host: live.smtp.mailtrap.io,
-    port: 587,
-    auth: {
-      user: 'smtp@mailtrap.io',
-      pass: 'YOUR_API_TOKEN',
-    },
-  });
+const sendMail = async ({ email, subject, message }) => {
+  try {
+    // Looking to send emails in production? Check out our Email API/SMTP product!
+    var transporter = nodemailer.createTransport({
+      host: 'sandbox.smtp.mailtrap.io',
+      port: 2525,
+      auth: {
+        user: 'cdfe726d862ea8',
+        pass: 'bd741651e8341b',
+      },
+    });
+    const mailOptions = {
+      from: 'raushan01@gmail.com',
+      to: email,
+      text: message,
+      subject,
+    };
 
-  //define the email options
-  const mailOptions = {
-    from: 'raushanraie01@gmail.com',
-    to: options.email,
-    subject: options.subject,
-    text: options.message,
-  };
-  //Actually send the email
-  await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent');
+    //
+  } catch (error) {
+    console.error('Error sending email:', error.message);
+  }
 };
 
 module.exports = sendMail;

@@ -4,7 +4,6 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-
 const UserSchema = new mongoose.Schema(
   {
     name: {
@@ -56,9 +55,17 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
 UserSchema.methods.isPasswordCorrect = async function (password, userPassword) {
   return await bcrypt.compare(password, userPassword);
 };
+
 UserSchema.methods.isTokenValid = async function (tokenIssuedAt) {
   //if the password was never changed then the token is valid
   if (!this.passwordChangedAt) return true;
@@ -76,6 +83,7 @@ UserSchema.methods.createPasswordRefreshToken = async function () {
     .digest('hex');
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; ///10 more min to reset password
+
   return resetToken;
 };
 
