@@ -1,13 +1,14 @@
 const express = require('express');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 const ApiError = require('./utils/apiError.js');
 const globalErrorHandler = require('./controllers/errorController.js');
 const toursRoute = require('./routes/tour_route.js');
 const usersRoute = require('./routes/user.route.js');
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
-const hpp = require('hpp');
 
 const morgan = require('morgan');
 
@@ -17,10 +18,10 @@ const app = express();
 app.use(helmet());
 
 if (process.env.NODE_ENV === 'development') {
-  //use for development purpose
+  //development purpose
   app.use(morgan('dev'));
 }
-//use to limit request from same API
+// limit request from same API
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
@@ -30,11 +31,10 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 //Data sanitization against  NoSQL query injection
 app.use(mongoSanitize());
-
 //Data sanitization against XSS
 app.use(xss());
 //preventing parameter pollution
-// app.use(hpp());
+app.use(hpp());
 //Serving static files
 app.use(express.static('public'));
 //Body Parser ,middleware to read data from req.body()
@@ -44,8 +44,8 @@ app.use(
   }),
 );
 
-app.use((req, _, next) => {
-  // console.log(req.headers);
+app.use((req, res, next) => {
+  // these are middleware which perform some task according to developer and pass to the next and so on , finally give response if there is no any error
 
   next();
 });

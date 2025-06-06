@@ -10,6 +10,7 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+//getting all User
 exports.getAllUsers = asyncHandler(async (req, res, next) => {
   const users = await User.find().select('+password');
 
@@ -23,6 +24,7 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
   });
 });
 
+//getting user if some credential are known
 exports.getUser = async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(id);
@@ -37,14 +39,14 @@ exports.getUser = async (req, res) => {
     },
   });
 };
-
+//creating a new user
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
     message: 'This route is not yet defined!',
   });
 };
-
+//updating some information of user except password
 exports.updateUser = (req, res) => {
   res.status(500).json({
     status: 'error',

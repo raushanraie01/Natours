@@ -4,13 +4,12 @@ const asyncHandler = require('../utils/asyncHandler.js');
 const APIFeatures = require('../utils/apiFeatures.js');
 
 exports.getAllTours = asyncHandler(async (req, res, next) => {
-  console.log(req.query);
-
   const features = new APIFeatures(Tour.find(), req.query)
     .filter()
     .sort()
     .limitFields()
     .paginate();
+
   const tours = await features.query;
 
   // SEND RESPONSE
@@ -24,7 +23,6 @@ exports.getAllTours = asyncHandler(async (req, res, next) => {
 });
 
 exports.createTour = asyncHandler(async (req, res, next) => {
-  // console.log(req.body);
   const newTour = await Tour.create(req.body);
 
   res.status(201).json({
