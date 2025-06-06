@@ -1,50 +1,25 @@
 const Tour = require('../models/tour.model.js');
 const ApiError = require('../utils/apiError.js');
 const asyncHandler = require('../utils/asyncHandler.js');
+const APIFeatures = require('../utils/apiFeatures.js');
 
 exports.getAllTours = asyncHandler(async (req, res, next) => {
-  //copying object
-  // console.log(req);
-  let queryObj = { ...req.query };
+  console.log(req.query);
 
-  // /advance filtering
-  const excludedFields = ['page', 'limit', 'fields'];
-  excludedFields.forEach((el) => delete queryObj[el]);
-  let queryStr = JSON.stringify(queryObj);
-  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-  queryObj = Tour.find(JSON.parse(queryStr));
+  const features = new APIFeatures(Tour.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  const tours = await features.query;
 
-  // const queryObj= Tour.find()
-  //   .where('duration')
-  //   .equals(5)
-  //   .where('difficulty')
-  //   .equals('easy');
-
-  //sorting
-  if (req.query.sort) {
-    console.log(req.query);
-    const sortBy = req.query.sort.split(',').join(' ');
-    // console.log('Sort By:', sortBy); // Debugging
-    queryObj = queryObj.sort('price');
-  } else {
-    queryObj = queryObj.sort('-createdAt'); // Default sort
-  }
-
-  //field limiting
-  if (req.query.fields) {
-    const fields = req.query.fields.split(',').join(' ');
-    queryObj = queryObj.select(fields);
-  } else {
-    queryObj = queryObj.sort('-_v');
-  }
-
-  const tours = await queryObj;
-  // console.log(tours);
-
+  // SEND RESPONSE
   res.status(200).json({
     status: 'success',
-    TotalTour: tours.length,
-    data: { tours },
+    results: tours.length,
+    data: {
+      tours,
+    },
   });
 });
 

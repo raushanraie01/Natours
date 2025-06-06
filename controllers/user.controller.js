@@ -2,79 +2,6 @@ const User = require('../models/user.model');
 const ApiError = require('../utils/apiError');
 const asyncHandler = require('./../utils/asyncHandler');
 
-// exports.signUp = asyncHandler(async (req, res) => {
-//   const newUser = User.create(req.body);
-
-//   res.status(201).json({
-//     status: 'success',
-//     data: { user: newUser },
-//   });
-// });
-
-// exports.getAllUsers = asyncHandler(async (req, res) => {
-//   const users = await User.find();
-
-//   res.status(400).json({
-//     status: 'success',
-//     users: {
-//       data: users,
-//     },
-//   });
-// });
-
-// exports.getUser = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-
-//   const user = await User.findById(id);
-
-//   if (!user) {
-//     return next(new ApiError('User Id does not exist ', 404));
-//   }
-
-//   //if exist
-//   res.status(400).json({
-//     status: 'success',
-//     users: {
-//       data: users,
-//     },
-//   });
-// });
-
-// exports.deleteUser = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-
-//   const user = await User.findOneAndDelete(id);
-
-//   if (!user) {
-//     return next(new ApiError('user with given id does not exist', 404));
-//   }
-
-//   res.status(400).json({
-//     status: 'success',
-//     message: 'Deleted',
-//     data: null,
-//   });
-// });
-
-// exports.updateUser = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-//   const user = await User.findByIdAndUpdate(id, req.body, {
-//     new: true,
-//     runValidators: true,
-//   });
-
-//   if (!user) {
-//     return next(new ApiError('user does not exist ', 404));
-//   }
-
-//   res.status(400).json({
-//     status: 'success',
-//     users: {
-//       data: user,
-//     },
-//   });
-// });
-
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -119,15 +46,6 @@ exports.createUser = (req, res) => {
 };
 
 exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
-
-exports.deleteUser = (req, res) => {
-  console.log(req.params);
-
   res.status(500).json({
     status: 'error',
     message: 'This route is not yet defined!',

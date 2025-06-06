@@ -1,11 +1,6 @@
 const express = require('express');
-const {
-  getAllUsers,
-  createUser,
-  getUser,
-  updateUser,
-  deleteUser,
-} = require('../controllers/user.controller');
+
+const userController = require('../controllers/user.controller');
 const authController = require('../controllers/authController.js');
 
 const router = express.Router();
@@ -20,10 +15,18 @@ router
   .route('/updatePassword/')
   .patch(authController.protect, authController.updatePassword);
 router
-  .route('/updateME')
-  .patch(authController.protect, authController.updateMe);
-
-router.route('/').get(getAllUsers).post(createUser);
-router.route('/:id').patch(updateUser).get(getUser).delete(deleteUser);
+  .route('/updateMe')
+  .patch(authController.protect, userController.updateMe);
+router
+  .route('/deleteMe')
+  .patch(authController.protect, userController.deleteMe);
+router
+  .route('/')
+  .get(userController.getAllUsers)
+  .post(userController.createUser);
+router
+  .route('/:id')
+  .patch(userController.updateUser)
+  .get(userController.getUser);
 
 module.exports = router;

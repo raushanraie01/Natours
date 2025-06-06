@@ -9,6 +9,16 @@ const crypto = require('crypto');
 const createResponseAndGenerateToken = async (user, statusCode, res) => {
   //generate JWT token
   let token = await generateRefreshToken(user._id);
+  res.cookie('jwt', token, {
+    expiresIn: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true,
+    secure: true,
+  });
+
+  //only changed in object not in database
+  user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
@@ -26,7 +36,7 @@ const generateRefreshToken = async (payload) => {
 };
 
 exports.signUp = asyncHandler(async (req, res, next) => {
-  const { name, email, password, passwordConfirm } = req.body;
+  const { name, email, password, passwordConfirm, role } = req.body;
 
   //check user enter every credential or not
   if (!name || !email || !password || !passwordConfirm) {
@@ -43,6 +53,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
     email,
     password,
     passwordConfirm,
+    role,
   });
 
   //generateToken
@@ -226,29 +237,4 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 
   //logged the user in and send JWT token
   createResponseAndGenerateToken(user, 200, res);
-});
-
-//updating the credentials except password and confirmPassword
-exports.updateMe = asyncHandler(async (req, res, next) => {
-  console.log('Hello updateMe');
-
-  if (req.body.password || req.body.passwordConfirm) {
-    return next(
-      new apiError(
-        'for updating password and confirm password,Go to updatePassword',
-        401,
-      ),
-    );
-  }
-
-  //finding user using protected route
-  const user = await User.findById(req.user._id);
-  console.log(user);
-  if (!user) {
-    return next(new apiError('Please logged in...', 401));
-  }
-  //user exists
-  //update whatever you want excepts password and passwordConfirm
-
-  createResponseAndGenerateToken(user, 201, res);
 });
