@@ -20,11 +20,11 @@ const tourSchema = new mongoose.Schema(
       type: String,
       require: [true, 'A tour must have a difficulty'],
     },
-    ratingQuantity: {
+    ratingsQuantity: {
       type: Number,
       default: 0,
     },
-    rating: {
+    ratingsAverage: {
       type: Number,
       default: 4.5,
     },
@@ -48,12 +48,33 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a image'],
     },
-    image: [String],
+    images: [String],
     createdAt: {
       type: Date,
       default: Date.now(),
     },
     startDates: [Date],
+    startLocation: {
+      type: {
+        type: String,
+        default: 'point',
+        enum: ['point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: { type: String, default: 'point', enum: 'point' },
+
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   // { timestamps: true },
 );

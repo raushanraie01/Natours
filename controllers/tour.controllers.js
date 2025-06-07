@@ -56,7 +56,7 @@ exports.updateTour = asyncHandler(async (req, res, next) => {
 exports.getTour = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const tour = await Tour.findById(id);
+  const tour = await Tour.findById(id).populate('guides');
 
   if (!tour) {
     return next(new ApiError('Tour with given id does not exist', 404));
