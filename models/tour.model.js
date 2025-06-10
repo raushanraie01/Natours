@@ -75,9 +75,34 @@ const tourSchema = new mongoose.Schema(
       },
     ],
     guides: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    // reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }], //  implement as virtual populate
   },
-  // { timestamps: true },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+// virtual Populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
+  next();
+});
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  }).populate('reviews');
+
+  next();
+});
 
 const Tour = mongoose.model('Tour', tourSchema);
 module.exports = Tour;

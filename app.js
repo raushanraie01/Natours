@@ -9,6 +9,7 @@ const ApiError = require('./utils/apiError.js');
 const globalErrorHandler = require('./controllers/errorController.js');
 const toursRoute = require('./routes/tour_route.js');
 const usersRoute = require('./routes/user.route.js');
+const reviewRoute = require('./routes/review.route.js');
 
 const morgan = require('morgan');
 
@@ -52,7 +53,7 @@ app.use((req, res, next) => {
 //for routing if this route is called
 app.use('/api/v1/tours', toursRoute);
 app.use('/api/v1/users', usersRoute);
-
+app.use('/api/v1/reviews', reviewRoute);
 //handling error for different route
 app.all('*', (req, _, next) => {
   next(new ApiError(`can't find  ${req.originalUrl} on this Url`, 404));
