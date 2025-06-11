@@ -6,9 +6,16 @@ const { promisify } = require('util');
 const sendMail = require('../utils/email');
 const crypto = require('crypto');
 
+const generateRefreshToken = async (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
 const createResponseAndGenerateToken = async (user, statusCode, res) => {
   //generate JWT token
   let token = await generateRefreshToken(user._id);
+
   res.cookie('jwt', token, {
     expiresIn: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
@@ -26,12 +33,6 @@ const createResponseAndGenerateToken = async (user, statusCode, res) => {
     data: {
       user,
     },
-  });
-};
-
-const generateRefreshToken = async (payload) => {
-  return jwt.sign({ payload }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES,
   });
 };
 
@@ -106,8 +107,8 @@ exports.protect = asyncHandler(async (req, _, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-    // console.log(token);
   }
+
   if (!token) {
     return next(new apiError('You need to login First', 401));
   }
@@ -119,7 +120,7 @@ exports.protect = asyncHandler(async (req, _, next) => {
 
   //check wheather user is exist or not
 
-  const freshUser = await User.findById(decodedData.payload);
+  const freshUser = await User.findById(decodedData.id);
 
   if (!freshUser) {
     return next(
@@ -139,7 +140,7 @@ exports.protect = asyncHandler(async (req, _, next) => {
 
 //protecting tours from deleting it.
 exports.restrictTo = (...roles) => {
-  return (req, _, next) => {
+  return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
         new apiError("You don't have permission to perform this action", 403),

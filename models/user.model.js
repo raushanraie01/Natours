@@ -84,6 +84,7 @@ UserSchema.methods.isTokenValid = async function (tokenIssuedAt) {
   return tokenIssuedAt > passwordChangeTimestamps;
 };
 
+//reset password
 UserSchema.methods.createPasswordRefreshToken = async function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
